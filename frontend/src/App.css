@@ -56,3 +56,26 @@
   font-size: 18px;
   margin-top: 280px;
 }
+
+.recent-keys-table {
+  margin-top: 300px;
+}
+
+.recent-keys-table table {
+  width: 10%;
+  border-collapse: collapse;
+  margin: -280px auto;
+}
+
+.recent-keys-table th,
+.recent-keys-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  margin: -280px auto;
+}
+
+.recent-keys-table th {
+  background-color: #f2f2f2;
+  margin: -280px auto;
+}

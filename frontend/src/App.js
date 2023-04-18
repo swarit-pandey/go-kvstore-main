@@ -27,7 +27,7 @@ const App = () => {
     } catch (error) {
       setResponse({
         status: error.response.status,
-        message: 'An error occurred while processing the command.',
+        message: error.response.data,
       });
     }
 
