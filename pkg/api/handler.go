@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/cors"
 	"github.com/sprectza/go-kvstore/internal/kvstore"
 	"github.com/sprectza/go-kvstore/internal/queue"
 )
@@ -17,8 +18,41 @@ type Handler struct {
 	qs  *queue.Queue
 }
 
-func NewHandler(kvs *kvstore.KVStore, qs *queue.Queue) *Handler {
-	return &Handler{kvs: kvs, qs: qs}
+func NewHandler(kvs *kvstore.KVStore, qs *queue.Queue) http.Handler {
+	mux := http.NewServeMux()
+
+	mux.Handle("/api/commands", cors.Default().Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handleCommand(w, r, kvs, qs)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})))
+
+	return mux
+}
+
+func handleCommand(w http.ResponseWriter, r *http.Request, kvs *kvstore.KVStore, qs *queue.Queue) {
+	type CommandRequest struct {
+		Command string `json:"command"`
+	}
+
+	var req CommandRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		return
+	}
+
+	handler := Handler{kvs: kvs, qs: qs}
+	response, err := handler.processCommand(req.Command)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *Handler) Command(w http.ResponseWriter, r *http.Request) {
