@@ -50,3 +50,9 @@
   margin: -280px auto;
   font-size: x-large;
 }
+
+.countdown-timer {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 280px;
+}
