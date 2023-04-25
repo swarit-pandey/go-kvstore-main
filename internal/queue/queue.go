@@ -25,7 +25,7 @@ func (q *Queue) Push(key string, values ...interface{}) {
 	q.mu.Lock()
 
 	if _, ok := q.queues[key]; !ok {
-		q.queues[key] = make(chan interface{}, 1000) // Arbitrary buffer size
+		q.queues[key] = make(chan interface{}, 10000)
 	}
 
 	for _, value := range values {

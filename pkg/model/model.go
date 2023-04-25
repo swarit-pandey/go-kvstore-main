@@ -1,7 +1,16 @@
-package models
+package model
 
 import (
+	"errors"
 	"time"
+)
+
+var (
+	ErrKeyNotFound       = errors.New("key not found")
+	ErrQueueEmpty        = errors.New("queue is empty")
+	ErrInvalidValue      = errors.New("invalid value")
+	ErrInvalidExpiryTime = errors.New("invalid expiry time")
+	ErrInvalidCondition  = errors.New("invalid condition")
 )
 
 // Request for SET
