@@ -1,6 +1,6 @@
 package kvstore
 
-import (
+/* import (
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -89,3 +89,4 @@ func (mw loggingMiddleware) BQPop(key string, timeout time.Duration) (value inte
 	value, err = mw.next.BQPop(key, timeout)
 	return
 }
+*/

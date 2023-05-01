@@ -24,21 +24,24 @@ type Endpoints struct {
 	BQPopEndpoint endpoint.Endpoint
 }
 
-// Create endpoints for each service
-func MakeEndpoints(s Service) Endpoints {
-	duration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+var (
+	duration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "request_duration_seconds",
 		Help: "Total time spent serving requests.",
 	}, []string{"method"})
-	prometheus.MustRegister(duration)
-
-	// Adding status counter to track the status codes
-	statusCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
+	statusCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "http_status_codes",
 		Help: "HTTP status codes.",
 	}, []string{"method", "status"})
-	prometheus.MustRegister(statusCounter)
+)
 
+func init() {
+	prometheus.MustRegister(duration)
+	prometheus.MustRegister(statusCounter)
+}
+
+// Create endpoints for each service
+func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
 		SetEndpoint:   PrometheusMetricsMiddleware("set", duration, statusCounter)(makeSetEndpoint(s)),
 		GetEndpoint:   PrometheusMetricsMiddleware("get", duration, statusCounter)(makeGetEndpoint(s)),
@@ -55,16 +58,11 @@ func PrometheusMetricsMiddleware(method string, duration *prometheus.HistogramVe
 			defer func(begin time.Time) {
 				latency := time.Since(begin).Seconds()
 				duration.WithLabelValues(method).Observe(latency)
-				fmt.Printf("Updated metric for method: %s, duration: %f\n", method, latency)
+				// fmt.Printf("Updated metric for method: %s, duration: %f\n", method, latency)
 
 				var statusCode int
-				if err != nil {
-					statusCode = errorEncoder(ctx, err, &dummyResponseWriter{})
-				} else {
-					statusCode = http.StatusOK
-				}
 
-				statusCounter.WithLabelValues(method, fmt.Sprint(statusCode)).Inc()
+				statusCounter.WithLabelValues(method, http.StatusText(statusCode)).Inc()
 			}(time.Now())
 
 			return next(ctx, request)
@@ -133,7 +131,7 @@ func MakeHTTPHandler(endpoints Endpoints) http.Handler {
 	}, []string{"method", "status"})
 
 	options := []httptransport.ServerOption{
-		httptransport.ServerErrorEncoder(errorEncoderWrapper),
+		// httptransport.ServerErrorEncoder(errorEncoderWrapper),
 		httptransport.ServerFinalizer(serverFinalizer(statusCounter)),
 	}
 
@@ -186,7 +184,7 @@ func serverFinalizer(statusCounter *prometheus.CounterVec) httptransport.ServerF
 		status := fmt.Sprint(code)
 		statusCounter.WithLabelValues(method, status).Inc()
 
-		fmt.Printf("ServerFinalizer executed, status code: %d", code)
+		// fmt.Printf("ServerFinalizer executed, status code: %d", code)
 	}
 }
 
@@ -305,7 +303,7 @@ func validateBQPopRequest(req *model.BQPopRequest) error {
 	return nil
 }
 
-func errorEncoder(_ context.Context, err error, w http.ResponseWriter) int {
+/* func errorEncoder(_ context.Context, err error, w http.ResponseWriter) int {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	statusCode := http.StatusInternalServerError
@@ -335,4 +333,4 @@ func (*dummyResponseWriter) WriteHeader(int)           {}
 // Wrapping the error encoder, for use in makeHttp
 func errorEncoderWrapper(ctx context.Context, err error, w http.ResponseWriter) {
 	_ = errorEncoder(ctx, err, w)
-}
+} */

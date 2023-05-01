@@ -11,17 +11,50 @@ var (
 )
 
 type Queue struct {
-	queues map[string][]interface{}
-	mu     sync.Mutex
+	queues    map[string][]interface{}
+	mu        sync.Mutex
+	pushChan  chan *PushRequest
+	pushBatch int
 }
+
+type PushRequest struct {
+	Key    string
+	Values []interface{}
+}
+
+const (
+	batchThreshold = 200
+)
 
 func NewQueue() *Queue {
-	return &Queue{
-		queues: make(map[string][]interface{}),
+	q := &Queue{
+		queues:    make(map[string][]interface{}),
+		pushChan:  make(chan *PushRequest, batchThreshold),
+		pushBatch: 0,
 	}
+
+	go func() {
+		for req := range q.pushChan {
+			q.doPush(req.Key, req.Values)
+			q.pushBatch++
+
+			if q.pushBatch >= batchThreshold {
+				q.mu.Lock()
+				q.pushBatch = 0
+				q.mu.Unlock()
+			}
+		}
+	}()
+
+	return q
 }
 
-func (q *Queue) Push(key string, values ...interface{}) {
+func (q *Queue) QPush(key string, values ...interface{}) error {
+	q.pushChan <- &PushRequest{Key: key, Values: values}
+	return nil
+}
+
+func (q *Queue) doPush(key string, values []interface{}) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
