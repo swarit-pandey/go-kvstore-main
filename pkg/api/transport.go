@@ -24,7 +24,7 @@ type Endpoints struct {
 	BQPopEndpoint endpoint.Endpoint
 }
 
-var (
+/* var (
 	duration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "request_duration_seconds",
 		Help: "Total time spent serving requests.",
@@ -38,16 +38,16 @@ var (
 func init() {
 	prometheus.MustRegister(duration)
 	prometheus.MustRegister(statusCounter)
-}
+} */
 
 // Create endpoints for each service
 func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
-		SetEndpoint:   PrometheusMetricsMiddleware("set", duration, statusCounter)(makeSetEndpoint(s)),
-		GetEndpoint:   PrometheusMetricsMiddleware("get", duration, statusCounter)(makeGetEndpoint(s)),
-		QPushEndpoint: PrometheusMetricsMiddleware("qpush", duration, statusCounter)(makeQPushEndpoint(s)),
-		QPopEndpoint:  PrometheusMetricsMiddleware("qpop", duration, statusCounter)(makeQPopEndpoint(s)),
-		BQPopEndpoint: PrometheusMetricsMiddleware("bqpop", duration, statusCounter)(makeBQPopEndpoint(s)),
+		SetEndpoint:   makeSetEndpoint(s),
+		GetEndpoint:   makeGetEndpoint(s),
+		QPushEndpoint: makeQPushEndpoint(s),
+		QPopEndpoint:  makeQPopEndpoint(s),
+		BQPopEndpoint: makeBQPopEndpoint(s),
 	}
 }
 
@@ -55,17 +55,21 @@ func MakeEndpoints(s Service) Endpoints {
 func PrometheusMetricsMiddleware(method string, duration *prometheus.HistogramVec, statusCounter *prometheus.CounterVec) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+			var statusCode int
 			defer func(begin time.Time) {
 				latency := time.Since(begin).Seconds()
 				duration.WithLabelValues(method).Observe(latency)
-				// fmt.Printf("Updated metric for method: %s, duration: %f\n", method, latency)
-
-				var statusCode int
 
 				statusCounter.WithLabelValues(method, http.StatusText(statusCode)).Inc()
 			}(time.Now())
 
-			return next(ctx, request)
+			response, err = next(ctx, request)
+			if err != nil {
+				statusCode = http.StatusInternalServerError
+			} else {
+				statusCode = http.StatusOK
+			}
+			return response, err
 		}
 	}
 }
@@ -78,8 +82,8 @@ func makeSetEndpoint(s Service) endpoint.Endpoint {
 		if !ok {
 			return model.SetResponse{Err: fmt.Errorf("invalid value type")}, nil
 		}
-		err := s.Set(req.Key, value, req.ExpiresAt, req.Condition)
-		return model.SetResponse{Err: err}, nil
+		s.Set(req.Key, value, req.ExpiresAt, req.Condition)
+		return model.SetResponse{Err: nil}, nil
 	}
 }
 
@@ -196,6 +200,7 @@ func decodeSetRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	if err := validateSetRequest(&req); err != nil {
 		return nil, err
 	}
+
 	return req, nil
 }
 

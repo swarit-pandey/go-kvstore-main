@@ -10,17 +10,19 @@ import (
 	"github.com/sprectza/go-kvstore/internal/kvstore"
 	"github.com/sprectza/go-kvstore/internal/queue"
 	kvstoreAPI "github.com/sprectza/go-kvstore/pkg/api"
-	"github.com/sprectza/go-kvstore/tcpconnpool"
 )
+
+/* const (
+	numShards      = 1024
+	batchThreshold = 1000
+) */
 
 func main() {
 	os.Setenv("GOGC", "200")
-	tcpPool := tcpconnpool.NewConnPool("localhost:8080", 256)
-	defer tcpPool.Close()
 
 	kvs := kvstore.NewKVStore()
 	qs := queue.NewQueue()
-	service := kvstoreAPI.NewService(kvs, qs, tcpPool)
+	service := kvstoreAPI.NewService(kvs, qs)
 
 	// Instantiate the logger and wrap the service with the logging middleware
 	// logger := kitlog.NewLogfmtLogger(os.Stderr)

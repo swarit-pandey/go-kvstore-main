@@ -1,24 +1,10 @@
 package kvstore
 
-/* import (
-	"bytes"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
-
-	"github.com/sprectza/go-kvstore/internal/kvstore"
-	"github.com/sprectza/go-kvstore/internal/queue"
-	"github.com/sprectza/go-kvstore/pkg/model"
-)
-
-func TestIntegration(t *testing.T) {
+/* func TestIntegration(t *testing.T) {
 	kvs := kvstore.NewKVStore()
 	qs := queue.NewQueue()
-	service := NewService(kvs, qs, )
+	tcpPool := tcpconnpool.NewConnPool("localhost:8080", 10)
+	service := NewService(kvs, qs, tcpPool)
 	endpoints := MakeEndpoints(service)
 	handler := MakeHTTPHandler(endpoints)
 
@@ -80,6 +66,7 @@ func TestIntegration(t *testing.T) {
 		Key:     "queue1",
 		Timeout: 1,
 	}
+
 	bqPopReqBody, _ := json.Marshal(bqPopReq)
 	resp, err = http.Post(server.URL+"/api/commands/bqpop", "application/json", bytes.NewBuffer(bqPopReqBody))
 	assert.NoError(t, err)
@@ -89,5 +76,4 @@ func TestIntegration(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&bqPopResp)
 	assert.NoError(t, err)
 	assert.Equal(t, "item2", bqPopResp.Value)
-}
-*/
+} */

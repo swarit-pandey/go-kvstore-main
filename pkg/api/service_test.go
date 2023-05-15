@@ -1,19 +1,10 @@
 package kvstore
 
-/*
-import (
-	"testing"
-	"time"
-
-	"github.com/sprectza/go-kvstore/internal/kvstore"
-	"github.com/sprectza/go-kvstore/internal/queue"
-	"github.com/stretchr/testify/assert"
-)
-
-func TestSet(t *testing.T) {
+/* func TestSet(t *testing.T) {
 	kvs := kvstore.NewKVStore()
 	qs := queue.NewQueue()
-	svc := NewService(kvs, qs)
+	tcpPool := tcpconnpool.NewConnPool("localhost:8080", 10)
+	svc := NewService(kvs, qs, tcpPool)
 
 	err := svc.Set("key1", "value1", time.Time{}, "")
 	assert.NoError(t, err)
@@ -28,7 +19,8 @@ func TestSet(t *testing.T) {
 func TestGet(t *testing.T) {
 	kvs := kvstore.NewKVStore()
 	qs := queue.NewQueue()
-	svc := NewService(kvs, qs)
+	tcpPool := tcpconnpool.NewConnPool("localhost:8080", 10)
+	svc := NewService(kvs, qs, tcpPool)
 
 	svc.Set("key1", "value1", time.Time{}, "")
 
@@ -43,7 +35,8 @@ func TestGet(t *testing.T) {
 func TestQPushAndQPop(t *testing.T) {
 	kvs := kvstore.NewKVStore()
 	qs := queue.NewQueue()
-	svc := NewService(kvs, qs)
+	tcpPool := tcpconnpool.NewConnPool("localhost:8080", 10)
+	svc := NewService(kvs, qs, tcpPool)
 
 	svc.QPush("queue1", "item1")
 	popValue, err := svc.QPop("queue1")
@@ -56,7 +49,8 @@ func TestQPushAndQPop(t *testing.T) {
 func TestBQPop(t *testing.T) {
 	kvs := kvstore.NewKVStore()
 	qs := queue.NewQueue()
-	svc := NewService(kvs, qs)
+	tcpPool := tcpconnpool.NewConnPool("localhost:8080", 10)
+	svc := NewService(kvs, qs, tcpPool)
 
 	svc.QPush("queue1", "item1")
 	popValue, err := svc.BQPop("queue1", 1*time.Second)
@@ -67,5 +61,4 @@ func TestBQPop(t *testing.T) {
 
 	_, err = svc.BQPop("queue1", 1*time.Second)
 	assert.Error(t, err)
-}
-*/
+} */
